@@ -101,7 +101,7 @@ namespace Picrypt
                     inputFile = inputFile.Replace("\"", "");
                     //Cleanup for Output
 
-                    //Comment 2
+                    //Comment 3
                     if (imageRadioButton.Checked)
                     {
                         outputFile = Path.ChangeExtension(inputFile, ".pcrim");
