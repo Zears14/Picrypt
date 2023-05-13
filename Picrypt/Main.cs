@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Picrypt
@@ -15,16 +9,16 @@ namespace Picrypt
         public Main()
         {
             InitializeComponent();
-            
         }
+
         private bool dragging = false;
         private Point dcp;
         private Point dfp;
 
         public static LOGIC_MAIN Lain;
+
         private void Form1_Load(object sender, EventArgs e)
         {
-
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -39,7 +33,6 @@ namespace Picrypt
 
         private void label1_Click(object sender, EventArgs e)
         {
-           
         }
 
         private void button4_Click(object sender, EventArgs e)

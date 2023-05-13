@@ -146,7 +146,10 @@ namespace Picrypt
                     aes.Padding = PaddingMode.PKCS7;
 
                     byte[] salt = new byte[16];
-                    new RNGCryptoServiceProvider().GetBytes(salt);
+                    using (var rng = RandomNumberGenerator.Create())
+                    {
+                        rng.GetBytes(salt);
+                    }
 
                     var key = new Rfc2898DeriveBytes(password, salt, 10000);
                     aes.Key = key.GetBytes(aes.KeySize / 8);
