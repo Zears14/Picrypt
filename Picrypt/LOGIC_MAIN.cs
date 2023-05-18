@@ -359,39 +359,66 @@ namespace Picrypt
             }
             try
             {
-                byte[] privateBytes = null;
-                byte[] encFileBytes = File.ReadAllBytes(inputFile);
-                string bin = Path.Combine(Directory.GetCurrentDirectory(), "bin");
-                string keypair = Path.Combine(bin, "keypair");
-                string privateKey = Path.Combine(keypair, "private.p8");
-                privateBytes = File.ReadAllBytes(privateKey);
-                using (FileStream fsInput = new FileStream(inputFile, FileMode.Open, FileAccess.Read)) { }
+                byte[] passBytes = Encoding.UTF8.GetBytes(password);
+                byte[] encryptedData = File.ReadAllBytes(inputFile);
+                byte[] encryptedFileData;
+                byte[] aesEnKey;
+                byte[] aesIVEnc;
+                byte[] decryptedAesKey;
+                byte[] decryptedAesIV;
+
                 using (RSA rsa = RSA.Create())
                 {
-                    rsa.ImportEncryptedPkcs8PrivateKey(Encoding.UTF8.GetBytes(password), privateBytes, out _);
-                    byte[] encAesKey = new byte[256];
-                    byte[] EncAesIV = new byte[16];
-                    byte[] encryptedData = new byte[encFileBytes.Length - encAesKey.Length - EncAesIV.Length];
-                    Array.Copy(encFileBytes, 0, encAesKey, 0, encAesKey.Length);
-                    Array.Copy(encFileBytes, encAesKey.Length, EncAesIV, 0, EncAesIV.Length);
-                    Array.Copy(encFileBytes, encAesKey.Length + EncAesIV.Length, encryptedData, 0, encryptedData.Length);
-                    byte[] aesKey = rsa.Decrypt(encAesKey, RSAEncryptionPadding.OaepSHA512);
-                    byte[] aesIV = rsa.Decrypt(EncAesIV, RSAEncryptionPadding.OaepSHA512);
+                    string bin = Path.Combine(Directory.GetCurrentDirectory(), "bin");
+                    string keypair = Path.Combine(bin, "keypair");
+                    string privatePath = Path.Combine(keypair, "private.p8");
+                    byte[] privateKeyBytes = File.ReadAllBytes(inputFile);
+
+                    rsa.ImportEncryptedPkcs8PrivateKey(passBytes, privateKeyBytes, out _);
+                    using (MemoryStream ms = new MemoryStream(encryptedData))
+                    {
+                        using  (BinaryReader br = new BinaryReader(ms))
+                        {
+                            int AesKeyLength = br.ReadInt32() * 8;
+                            aesEnKey = br.ReadBytes(AesKeyLength / 8);
+
+                            int AesIVLength = br.ReadInt32() * 8;
+                            aesIVEnc = br.ReadBytes(AesIVLength / 8);
+
+                            int EncryptedFileDatalength = br.ReadInt32();
+                            encryptedFileData = br.ReadBytes(EncryptedFileDatalength);
+                            br.Dispose();
+                            br.Close();
+                        }
+                        ms.Dispose();
+                        ms.Close();
+                    }
+                    decryptedAesKey = rsa.Decrypt(aesEnKey, RSAEncryptionPadding.OaepSHA512);
+                    decryptedAesIV = rsa.Decrypt(aesIVEnc, RSAEncryptionPadding.OaepSHA512);
+
                     using (Aes aes = Aes.Create())
                     {
                         aes.KeySize = 256;
-                        aes.Padding = PaddingMode.PKCS7;
-                        aes.Mode = CipherMode.CBC;
                         aes.BlockSize = 128;
-                        aes.Key = aesKey;
-                        aes.IV = aesIV;
+                        aes.Padding = PaddingMode.PKCS7;
+                        aes.Key = decryptedAesKey;
+                        aes.IV = decryptedAesIV;
 
-                        using (FileStream fs = new FileStream(outputFile, FileMode.Create))
+                        using (MemoryStream ms = new MemoryStream(encryptedFileData))
                         {
-                            using (CryptoStream cs = new CryptoStream(fs, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                            using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read))
                             {
-                                cs.Write(encryptedData, 0, encryptedData.Length);
+                                using (FileStream fs = new FileStream(outputFile, FileMode.Create))
+                                {
+                                    cs.CopyTo(fs);
+                                    fs.Dispose();
+                                    fs.Close();
+                                }
+                                cs.Dispose();
+                                cs.Close();
                             }
+                            ms.Dispose();
+                            ms.Close();
                         }
                     }
                 }
