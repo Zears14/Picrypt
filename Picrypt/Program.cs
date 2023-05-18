@@ -21,7 +21,7 @@ namespace Picrypt
 			binPath = Path.Combine(Directory.GetCurrentDirectory(), "bin");
 			keypairPath = Path.Combine(binPath, "keypair");
 			publicXmlPath = Path.Combine(keypairPath, "public.xml");
-			string privateXmlPath = Path.Combine(keypairPath, "private.xml");
+			string privateXmlPath = Path.Combine(keypairPath, "private.p8");
 			string passphrase = null;
 
 			if (!Directory.Exists(binPath))
@@ -39,8 +39,9 @@ namespace Picrypt
 				try
 				{
 					// Generate a new RSA key pair
-					using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(4096))
+					using (RSA rsa = RSA.Create())
 					{   // Export the public key to XML
+						rsa.KeySize = 4096;
 						string publicKey = rsa.ToXmlString(false);
 						File.WriteAllText(publicXmlPath, publicKey);
 
@@ -75,7 +76,7 @@ namespace Picrypt
 							}
 						}
 
-						var pbeParams = new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA512, 8192);
+						var pbeParams = new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA512, 10000);
 
 						byte[] encryptedPrivateKey = rsa.ExportEncryptedPkcs8PrivateKey(Encoding.UTF8.GetBytes(passphrase), pbeParams);
 						File.WriteAllBytes(privateXmlPath, encryptedPrivateKey);
@@ -86,13 +87,16 @@ namespace Picrypt
 				{
 					MessageBox.Show(e.Message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
+				catch (Exception e)
+				{
+					MessageBox.Show(e.Message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+				finally
+				{
+				}
 			}
 			Application.Run(new Main());
 		}
-		public static string GetPU()
-		{
-			string puke = publicXmlPath;
-			return puke;
-		}
+
 	}
 }
