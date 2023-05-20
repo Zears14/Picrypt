@@ -37,12 +37,14 @@ namespace Picrypt
 
         private void button4_Click(object sender, EventArgs e)
         {
-            LOGIC_MAIN.EncryptFile();
+            LOGIC_MAIN Logic = new LOGIC_MAIN();
+            this.Invoke((Action)Logic.EncryptFile);
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            LOGIC_MAIN.DecryptFile();
+            LOGIC_MAIN Logic = new LOGIC_MAIN();
+            this.Invoke((Action)Logic.DecryptFile);
         }
 
         private void label2_MouseDown(object sender, MouseEventArgs e)
