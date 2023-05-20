@@ -34,11 +34,11 @@ namespace Picrypt
                 var passwordLabel = new Label() { Left = 20, Top = 50, Text = "Password:" };
                 var passwordTextBox = new TextBox() { Left = 120, Top = 50, Width = 200, PasswordChar = '*' };
                 // Create a group box to contain the radio buttons
-                Panel groupBox = new Panel();
-                groupBox.Text = "Select an option";
-                groupBox.Location = new Point(10, 80);
-                groupBox.Size = new Size(200, 70);
-                groupBox.BorderStyle = BorderStyle.None;
+                Panel panel = new Panel();
+                panel.Text = "Select an option";
+                panel.Location = new Point(10, 80);
+                panel.Size = new Size(200, 70);
+                panel.BorderStyle = BorderStyle.None;
 
                 RadioButton imageRadioButton = new RadioButton();
                 imageRadioButton.Text = "Image";
@@ -49,7 +49,7 @@ namespace Picrypt
                 RadioButton textRadioButton = new RadioButton();
                 textRadioButton.Text = "Text";
                 textRadioButton.Location = new Point(100, 20);
-                groupBox.Controls.Add(textRadioButton);
+                panel.Controls.Add(textRadioButton);
 
                 var okButton = new Button() { Text = "OK", Left = 170, Top = 110, Width = 80 };
                 var cancelButton = new Button() { Text = "Cancel", Left = 270, Top = 110, Width = 80 };
@@ -60,9 +60,9 @@ namespace Picrypt
                 dialog.Controls.Add(inputFileTextBox);
                 dialog.Controls.Add(passwordLabel);
                 dialog.Controls.Add(passwordTextBox);
-                dialog.Controls.Add(groupBox);
-                groupBox.Controls.Add(imageRadioButton);
-                groupBox.SendToBack();
+                dialog.Controls.Add(panel);
+                panel.Controls.Add(imageRadioButton);
+                panel.SendToBack();
                 dialog.Controls.Add(okButton);
                 dialog.Controls.Add(cancelButton);
                 okButton.BringToFront();
@@ -92,6 +92,7 @@ namespace Picrypt
                         outputFile = outputFile.Replace("\"", "");
                     }
                     IP = inputFile;
+
                     OP = outputFile;
                     P = password;
                 }
