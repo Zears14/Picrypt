@@ -92,6 +92,7 @@ namespace Picrypt
                         outputFile = outputFile.Replace("\"", "");
                     }
                     IP = inputFile;
+
                     OP = outputFile;
                     P = password;
                 }
