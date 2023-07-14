@@ -8,9 +8,11 @@ namespace Picrypt
 {
     public partial class Main : Form
     {
+
         public Main()
         {
             InitializeComponent();
+
         }
 
 
@@ -19,7 +21,6 @@ namespace Picrypt
         private Point dcp;
         private Point dfp;
 
-        public static LOGIC_MAIN Lain;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -40,18 +41,12 @@ namespace Picrypt
         }
         private void button4_Click(object sender, EventArgs e)
         {
-            Action action = () =>
-            {
-                LOGIC_MAIN Logic = new();
-                Logic.EncryptFile();
-            };
-            this.Invoke(action);
+            LOGIC_MAIN.EncryptFile();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            LOGIC_MAIN Logic = new LOGIC_MAIN();
-            this.Invoke((Action)Logic.DecryptFile);
+            //Decrypt
         }
 
         private void label2_MouseDown(object sender, MouseEventArgs e)

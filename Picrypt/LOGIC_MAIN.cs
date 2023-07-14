@@ -8,61 +8,14 @@ using Newtonsoft.Json;
 
 namespace Picrypt
 {
-    public class LOGIC_MAIN
+    public static class LOGIC_MAIN
     {
-        public byte[] key { get; set; }
+        public static byte[] key { get; set; }
 
-
-
-
-        /// <summary>
-        /// XOR Encryption for filename
-        /// </summary>
-        /// <param name="filename">the name of the file</param>
-        /// <param name="iteration">not used</param>
-        /// <returns>the filename encrypted with XOR Encryption</returns>
-        public string EncryptFileName(string filename, int iteration)
+        public static void GetInputForEncryption(out string IP, out string OP)
         {
-            byte[] filenameBytes = Encoding.UTF8.GetBytes(filename);
-            byte[] encryptedBytes = new byte[filenameBytes.Length];
-
-            for (int u = 0; u < filenameBytes.Length; u++)
-            {
-                encryptedBytes[u] = (byte)(filenameBytes[u] ^ key[u % key.Length]);
-            }
-
-            return Convert.ToBase64String(encryptedBytes);
-        }
-
-        /// <summary>
-        /// Decrypt the XOR Encrypted File name
-        /// </summary>
-        /// <param name="encryptedfilename">the Encrypted file name</param>
-        /// <param name="iteration">not used</param>
-        /// <returns>the decrypted filename</returns>
-        public string DecryptFileName(string encryptedfilename, int iteration)
-        {
-            byte[] encryptedBytes = Convert.FromBase64String(encryptedfilename);
-            byte[] decryptedBytes = new byte[encryptedBytes.Length];
-
-            for (int u = 0; u < encryptedBytes.Length; u++)
-            {
-                decryptedBytes[u] = (byte)(encryptedBytes[u] ^ key[u % key.Length]);
-            }
-
-            return Encoding.UTF8.GetString(decryptedBytes);
-        }
-
-        /// <summary>
-        /// encrypt file
-        /// </summary>
-        public void EncryptFile()
-        {
-
-            string inputFile = "";
-            string outputFile = "";
-            string password = "";
-
+            IP = "";
+            OP = "";
             using (var dialog = new Form())
             {
                 dialog.StartPosition = FormStartPosition.CenterScreen;
@@ -71,13 +24,10 @@ namespace Picrypt
                 dialog.MaximizeBox = false;
                 dialog.MinimizeBox = false;
                 dialog.ClientSize = new Size(400, 160);
-                dialog.Size = new Size(400, 160);
-                dialog.Visible = true;
+                dialog.Visible = false;
 
                 var inputFileLabel = new Label() { Left = 20, Top = 20, Text = "Input File:" };
                 var inputFileTextBox = new TextBox() { Left = 120, Top = 20, Width = 200 };
-                var passwordLabel = new Label() { Left = 20, Top = 50, Text = "Encryption Key:" };
-                var passwordTextBox = new TextBox() { Left = 120, Top = 50, Width = 200, PasswordChar = '*' };
                 // Create a group box to contain the radio buttons
                 Panel panel = new()
                 {
@@ -109,8 +59,6 @@ namespace Picrypt
 
                 dialog.Controls.Add(inputFileLabel);
                 dialog.Controls.Add(inputFileTextBox);
-                dialog.Controls.Add(passwordLabel);
-                dialog.Controls.Add(passwordTextBox);
                 dialog.Controls.Add(panel);
                 panel.Controls.Add(imageRadioButton);
                 panel.SendToBack();
@@ -124,32 +72,82 @@ namespace Picrypt
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     // Get the input file, output file, and password from the text boxes
-                    inputFile = inputFileTextBox.Text;
-                    password = passwordTextBox.Text;
-                    key = Encoding.UTF8.GetBytes(password);
+                    IP = inputFileTextBox.Text;
                     //Clean up for input
-                    inputFile = inputFile.Replace(@"\", @"/");
-                    inputFile = inputFile.Replace("\"", "");
+                    IP = IP.Replace(@"\", @"/");
+                    IP = IP.Replace("\"", "");
                     //Cleanup for Output
                     if (imageRadioButton.Checked)
                     {
-                        outputFile = Path.ChangeExtension(inputFile, ".pcrim");
-                        outputFile = outputFile.Replace(@"\", @"/");
-                        outputFile = outputFile.Replace("\"", "");
+                        OP = Path.ChangeExtension(IP, ".pcrim");
+                        OP = OP.Replace(@"\", @"/");
+                        OP = OP.Replace("\"", "");
                     }
                     else if (textRadioButton.Checked)
                     {
-                        outputFile = Path.ChangeExtension(inputFile, ".pctx");
-                        outputFile = outputFile.Replace(@"\", @"/");
-                        outputFile = outputFile.Replace("\"", "");
+                        OP = Path.ChangeExtension(IP, ".pctx");
+                        OP = OP.Replace(@"\", @"/");
+                        OP = OP.Replace("\"", "");
                     }
                 }
-                else if (dialog.ShowDialog() == DialogResult.Cancel)
+                else
                 {
                     MessageBox.Show("Canceled The Operation", "Exit", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Application.Exit();
+                    return;
                 }
             }
+        }
+
+
+        /// <summary>
+        /// XOR Encryption for filename
+        /// </summary>
+        /// <param name="filename">the name of the file</param>
+        /// <param name="iteration">not used</param>
+        /// <returns>the filename encrypted with XOR Encryption</returns>
+        public static string EncryptFileName(string filename, int iteration)
+        {
+            byte[] filenameBytes = Encoding.UTF8.GetBytes(filename);
+            byte[] encryptedBytes = new byte[filenameBytes.Length];
+
+            for (int u = 0; u < filenameBytes.Length; u++)
+            {
+                encryptedBytes[u] = (byte)(filenameBytes[u] ^ key[u % key.Length]);
+            }
+
+            return Convert.ToBase64String(encryptedBytes);
+        }
+
+        /// <summary>
+        /// Decrypt the XOR Encrypted File name
+        /// </summary>
+        /// <param name="encryptedfilename">the Encrypted file name</param>
+        /// <param name="iteration">not used</param>
+        /// <returns>the decrypted filename</returns>
+        public static string DecryptFileName(string encryptedfilename, int iteration)
+        {
+            byte[] encryptedBytes = Convert.FromBase64String(encryptedfilename);
+            byte[] decryptedBytes = new byte[encryptedBytes.Length];
+
+            for (int u = 0; u < encryptedBytes.Length; u++)
+            {
+                decryptedBytes[u] = (byte)(encryptedBytes[u] ^ key[u % key.Length]);
+            }
+
+            return Encoding.UTF8.GetString(decryptedBytes);
+        }
+
+        /// <summary>
+        /// encrypt file
+        /// </summary>
+        public static void EncryptFile()
+        {
+
+            string inputFile = "";
+            string outputFile = "";
+
+            GetInputForEncryption(out inputFile, out outputFile);
 
             if (!File.Exists(inputFile))
             {
@@ -157,6 +155,45 @@ namespace Picrypt
             }
             try
             {
+                byte[] content = File.ReadAllBytes(inputFile);
+                byte[] encryptedContent;
+                using (Aes aes = Aes.Create())
+                {
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    aes.KeySize = 256;
+                    aes.GenerateKey();
+                    aes.GenerateIV();
+                    key = aes.IV;
+
+                    using (MemoryStream ms =  new MemoryStream())
+                    {
+                        using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                        {
+                            cs.Write(content, 0, content.Length);
+                            encryptedContent = ms.ToArray();
+                            cs.FlushFinalBlock();
+                            cs.Close();
+                            ms.Close();
+                        }
+                    }
+                    using (RSA rsa = RSA.Create())
+                    {
+                        string publicXml = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "bin/keypair/public.xml"));
+                        rsa.FromXmlString(publicXml);
+                        string v = Convert.ToBase64String(rsa.Encrypt(aes.Key, RSAEncryptionPadding.OaepSHA512));
+                        var prejson = new
+                        {
+                            V1 = v,
+                            V2 = Convert.ToBase64String(aes.IV),
+                            V3 = Convert.ToBase64String(encryptedContent)
+                        };
+                        var json = JsonConvert.SerializeObject(prejson);
+                        File.WriteAllText(outputFile, json);
+                        rsa.Clear();
+                    }
+                    aes.Clear();
+                }
                 string ency = EncryptFileName(Path.GetFileNameWithoutExtension(inputFile), 8);
                 string ext = Path.GetExtension(outputFile);
                 string dir = Path.GetDirectoryName(outputFile);
@@ -174,7 +211,7 @@ namespace Picrypt
             }
         }
 
-        public void DecryptFile()
+        public static void DecryptFile()
         {
             string inputFile = "";
             string outputFile = "";
