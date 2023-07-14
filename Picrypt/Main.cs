@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.IO;
+using System.Text;
 
 namespace Picrypt
 {
@@ -10,6 +12,8 @@ namespace Picrypt
         {
             InitializeComponent();
         }
+
+
 
         private bool dragging = false;
         private Point dcp;
@@ -34,11 +38,14 @@ namespace Picrypt
         private void label1_Click(object sender, EventArgs e)
         {
         }
-
         private void button4_Click(object sender, EventArgs e)
         {
-            LOGIC_MAIN Logic = new LOGIC_MAIN();
-            this.Invoke((Action)Logic.EncryptFile);
+            Action action = () =>
+            {
+                LOGIC_MAIN Logic = new();
+                Logic.EncryptFile();
+            };
+            this.Invoke(action);
         }
 
         private void button3_Click(object sender, EventArgs e)
