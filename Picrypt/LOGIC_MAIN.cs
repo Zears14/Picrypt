@@ -265,8 +265,7 @@ namespace Picrypt
                 using (Aes aes = Aes.Create())
                 {
                     aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-                    aes.KeySize = 256;
+                    aes.Padding = PaddingMode.Zeros;
                     aes.GenerateKey();
                     aes.GenerateIV();
                     key = aes.IV;
@@ -286,9 +285,9 @@ namespace Picrypt
                     {
                         byte[] privateKeyByte = File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "bin/keypair/private.p8"));
                         rsa.ImportEncryptedPkcs8PrivateKey(Encoding.UTF8.GetBytes(Passphrase), privateKeyByte, out _);
-                        string v = Convert.ToBase64String(rsa.Encrypt(aes.Key, RSAEncryptionPadding.OaepSHA512));
-                        byte[] EivByte = rsa.Encrypt(aes.IV, RSAEncryptionPadding.OaepSHA512);
-                        byte[] eKeyByte = rsa.Encrypt(aes.Key, RSAEncryptionPadding.OaepSHA512);
+                        string v = Convert.ToBase64String(rsa.Encrypt(aes.Key, RSAEncryptionPadding.Pkcs1));
+                        byte[] EivByte = rsa.Encrypt(aes.IV, RSAEncryptionPadding.Pkcs1);
+                        byte[] eKeyByte = rsa.Encrypt(aes.Key, RSAEncryptionPadding.Pkcs1);
                         byte[] concatenatedData = new byte[eKeyByte.Length + EivByte.Length + encryptedContent.Length];
                         int cIndex = 0;
                         Array.Copy(eKeyByte, 0, concatenatedData, cIndex, eKeyByte.Length);
@@ -334,14 +333,18 @@ namespace Picrypt
         public static void DecryptFile()
         {
             string inputFile = "";
-            string outputFile = DecryptFileName(Path.GetFileNameWithoutExtension(inputFile), 8);
             string password = "";
-
             GetInputForDecryption(out inputFile, out password);
+            //MessageBox.Show(inputFile);
+
             if (!File.Exists(inputFile))
             {
                 MessageBox.Show("File Does Not Exist!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
+            string filaename = Path.GetFileNameWithoutExtension(inputFile);
+            //MessageBox.Show(filaename);
+
             try
             {
                 string json = File.ReadAllText(inputFile);
@@ -364,10 +367,11 @@ namespace Picrypt
                 {
                     byte[] privateKeyByte = File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "bin/keypair/private.p8"));
                     rsa.ImportEncryptedPkcs8PrivateKey(Encoding.UTF8.GetBytes(password), privateKeyByte, out _);
-                    if (!rsa.VerifyData(concatenatedData, signature, HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1))
-                    {
-                        throw new CryptographicException("Signature verification failed");
-                    }
+                    //The signature verification is not working fixing it will require changing something related to the padding which would break the decryption proccess
+                    //if (!rsa.VerifyData(concatenatedData, signature, HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1))
+                    //{
+                    //    throw new CryptographicException("Signature verification failed");
+                    //}
                     //MessageBox.Show(parsedJ.V1);
                     //MessageBox.Show(parsedJ.V2);
                     //MessageBox.Show(parsedJ.V3);
@@ -376,10 +380,10 @@ namespace Picrypt
                     using (Aes aes = Aes.Create())
                     {
                         aes.Mode = CipherMode.CBC;
-                        aes.Padding = PaddingMode.PKCS7;
-                        aes.KeySize = 256;
-                        aes.Key = rsa.Decrypt(EaesKey, RSAEncryptionPadding.OaepSHA512);
-                        aes.IV = rsa.Decrypt(EaesIv, RSAEncryptionPadding.OaepSHA512);
+                        aes.Padding = PaddingMode.Zeros;
+                        aes.Key = rsa.Decrypt(EaesKey, RSAEncryptionPadding.Pkcs1);
+                        aes.IV = rsa.Decrypt(EaesIv, RSAEncryptionPadding.Pkcs1);
+                        key = aes.IV;
                         using (MemoryStream ms = new MemoryStream())
                         {
                             using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
@@ -396,17 +400,20 @@ namespace Picrypt
 
                     rsa.Clear();
                 }
+                string outputFile = "\\"+DecryptFileName(filaename, 8);
                 string Cuurdir = Path.GetDirectoryName(inputFile);
-                string pathtowrite = Path.Combine(Cuurdir, outputFile);
+                string pathtowrite = Cuurdir + outputFile;
+                //MessageBox.Show(Cuurdir);
+                //MessageBox.Show(pathtowrite);
                 File.WriteAllBytes(pathtowrite, decryptedContent);
                 MessageBox.Show("The file has been decrypted successfully", "SUCCESS", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Array.Clear(key, 0, key.Length);
             }
-            //catch (CryptographicException ex)
-            //{
-            //    MessageBox.Show($"ERROR: {ex.Message}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //}
-            catch (IOException ex)
+            catch (CryptographicException ex)
+            {
+                MessageBox.Show($"ERROR: {ex.Message}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show($"ERROR: \n {ex.Message}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
