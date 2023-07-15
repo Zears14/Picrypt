@@ -46,7 +46,7 @@ namespace Picrypt
 
         private void button3_Click(object sender, EventArgs e)
         {
-            //Decrypt
+            LOGIC_MAIN.DecryptFile();
         }
 
         private void label2_MouseDown(object sender, MouseEventArgs e)
